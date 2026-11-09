@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Office Room</title>
+<script>try { const t = localStorage.getItem('office-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f1; --panel: #ffffff; --panel-2: #fafaf8; --sunken: #efeee9; --line: #e5e3dc; --line-strong: #d3d0c7;
+  --text: #1b1a18; --muted: #66625a; --accent: #3b5bdb;
+  --claude: #b4531a; --claude-bg: #fcf1e8; --claude-line: #f0d3bd;
+  --codex: #0e7480; --codex-bg: #e8f4f4; --codex-line: #bfe0e1;
+  --user-bg: #eaeefb; --user-line: #cfd9f6; --user-text: #1b1a18;
+  --ok: #2c7a4b; --ok-bg: #e6f3eb; --warn: #a2610c; --warn-bg: #fdf4e4; --warn-line: #efd29c; --bad: #b3372f; --bad-bg: #fbeae8;
+  --shadow-sm: 0 1px 2px rgba(20,18,15,.06); --shadow-md: 0 4px 16px rgba(20,18,15,.08), 0 1px 3px rgba(20,18,15,.06); --shadow-lg: 0 24px 60px rgba(20,18,15,.22);
+  --r-sm: 6px; --r: 10px; --r-lg: 14px;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110; --panel: #1a1918; --panel-2: #1f1e1c; --sunken: #151413; --line: #2c2a27; --line-strong: #3d3a36;
+    --text: #ecebe6; --muted: #a39e94; --accent: #8aa2ff;
+    --claude: #f09a5f; --claude-bg: #271d16; --claude-line: #4a3222;
+    --codex: #5ec6cf; --codex-bg: #132526; --codex-line: #1f4547;
+    --user-bg: #1d2333; --user-line: #2e3953; --user-text: #ecebe6;
+    --ok: #62be85; --ok-bg: #15261b; --warn: #e6b05a; --warn-bg: #2a2214; --warn-line: #5a4520; --bad: #ec7a70; --bad-bg: #2d1816;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4); --shadow-md: 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 24px 60px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --panel: #1a1918; --panel-2: #1f1e1c; --sunken: #151413; --line: #2c2a27; --line-strong: #3d3a36;
+  --text: #ecebe6; --muted: #a39e94; --accent: #8aa2ff;
+  --claude: #f09a5f; --claude-bg: #271d16; --claude-line: #4a3222;
+  --codex: #5ec6cf; --codex-bg: #132526; --codex-line: #1f4547;
+  --user-bg: #1d2333; --user-line: #2e3953; --user-text: #ecebe6;
+  --ok: #62be85; --ok-bg: #15261b; --warn: #e6b05a; --warn-bg: #2a2214; --warn-line: #5a4520; --bad: #ec7a70; --bad-bg: #2d1816;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4); --shadow-md: 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 24px 60px rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", "Sukhumvit Set", sans-serif; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+
+button { font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 6px 12px; min-height: 32px; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+button:hover { border-color: var(--line-strong); background: var(--panel-2); }
+button:active { transform: translateY(1px); }
+button.primary { background: var(--text); color: var(--bg); border-color: var(--text); box-shadow: var(--shadow-sm); }
+button.primary:hover { background: color-mix(in srgb, var(--text) 86%, var(--bg)); }
+button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+button.ghost:hover { background: var(--sunken); color: var(--text); }
+button.danger:hover { color: var(--bad); background: var(--bad-bg); }
+button:disabled { opacity: .45; cursor: default; transform: none; }
+button.mini { padding: 2px 6px; min-height: 24px; font-size: 12px; line-height: 1; border-radius: 6px; }
+button.icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+button svg { width: 16px; height: 16px; flex: none; }
+input, textarea, select { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; transition: border-color .15s, box-shadow .15s; }
+input:hover, textarea:hover, select:hover { border-color: var(--line-strong); }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+textarea { resize: vertical; }
+label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin: 14px 0 5px; }
+kbd { font: 11px var(--mono); padding: 1px 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; background: var(--panel-2); color: var(--muted); }
+
+.app { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: auto 1fr; height: 100vh; }
+
+/* ---------- header ---------- */
+header { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; padding: 8px 16px; min-height: 56px; border-bottom: 1px solid var(--line); background: var(--panel); position: relative; z-index: 2; }
+.brand { display: flex; align-items: center; gap: 9px; margin-right: 10px; }
+.logo { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, var(--claude) 0 50%, var(--codex) 50% 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); flex: none; }
+header h1 { font-size: 15px; font-weight: 650; margin: 0; letter-spacing: -.1px; }
+.agent { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; font-size: 12px; padding: 5px 6px 5px 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel-2); min-height: 38px; }
+.agent .an { font-size: 13px; font-weight: 650; }
+.agent.claude .an { color: var(--claude); } .agent.codex .an { color: var(--codex); }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; padding: 1px 8px; border-radius: 99px; background: var(--sunken); color: var(--muted); white-space: nowrap; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); } .badge.rest, .badge.waiting { background: var(--warn-bg); color: var(--warn); }
+.badge.off { background: var(--bad-bg); color: var(--bad); } .badge.running { background: var(--claude-bg); color: var(--claude); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.dot.rest { background: var(--warn); } .dot.off { background: var(--bad); }
+.dot.run { background: var(--claude); box-shadow: 0 0 0 0 color-mix(in srgb, var(--claude) 60%, transparent); animation: pulse 1.4s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--claude) 55%, transparent); } 70% { box-shadow: 0 0 0 6px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.spacer { flex: 1; }
+.win { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; border-left: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.win .wk { font-size: 12px; }
+.win .bar { width: 56px; height: 6px; border-radius: 99px; background: var(--sunken); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.win .bar i { display: block; height: 100%; border-radius: 99px; background: var(--ok); transition: width .4s ease; }
+.win .bar i.warn { background: var(--warn); } .win .bar i.bad { background: var(--bad); }
+.win b { color: var(--text); font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; min-width: 30px; }
+.win b.warn { color: var(--warn); } .win b.bad { color: var(--bad); }
+.win .rs { font-size: 12px; font-variant-numeric: tabular-nums; }
+.win .rs:empty { display: none; }
+
+/* ---------- rooms ---------- */
+aside { border-right: 1px solid var(--line); overflow-y: auto; padding: 14px 12px; background: var(--panel-2); }
+.new-btn { width: 100%; min-height: 38px; font-size: 13.5px; }
+.side-label { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); margin: 18px 8px 6px; }
+#rooms { display: flex; flex-direction: column; gap: 2px; }
+.room-item { position: relative; display: flex; gap: 9px; align-items: center; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text); transition: background .12s; }
+.room-item:hover { background: var(--sunken); }
+.room-item.active { background: var(--panel); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line); font-weight: 550; }
+.room-item.active::before { content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+.room-item .rt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-item .badge { font-size: 11px; padding: 0 7px; }
+.room-item .badge.done, .room-item .badge.idle { background: transparent; padding: 0; }
+.dot.waiting { background: var(--warn); } .dot.done { background: var(--line-strong); } .dot.idle { background: var(--line-strong); }
+
+/* ---------- main / chat ---------- */
+main { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); }
+.room-head { padding: 12px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: center; background: var(--panel); }
+.room-head .th { flex: 1; min-width: 0; }
+.room-head .t { font-size: 15px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.room-head .t span.tt { overflow: hidden; text-overflow: ellipsis; }
+.room-head .meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+.meta { font-size: 12px; color: var(--muted); }
+.meta .sep { opacity: .5; margin: 0 5px; }
+.msgs { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.msg { display: flex; gap: 10px; max-width: 880px; width: fit-content; min-width: 140px; }
+.msg .av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: 13px; font-weight: 700; margin-top: 1px; }
+.msg.claude .av { background: var(--claude-bg); color: var(--claude); box-shadow: inset 0 0 0 1px var(--claude-line); }
+.msg.codex .av { background: var(--codex-bg); color: var(--codex); box-shadow: inset 0 0 0 1px var(--codex-line); }
+.msg .mc { min-width: 0; }
+.msg .who { font-size: 12.5px; font-weight: 650; margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.msg .who .chip { font-weight: 400; font-size: 12px; color: var(--muted); }
+.msg .who .chip:empty { display: none; }
+.msg .body { padding: 11px 15px; border-radius: 4px var(--r-lg) var(--r-lg) var(--r-lg); overflow-wrap: anywhere; font-size: 14.5px; line-height: 1.65; border: 1px solid transparent; }
+.msg.claude .who { color: var(--claude); } .msg.claude .body { background: var(--claude-bg); border-color: var(--claude-line); }
+.msg.codex .who { color: var(--codex); } .msg.codex .body { background: var(--codex-bg); border-color: var(--codex-line); }
+.msg.user { align-self: flex-end; } .msg.user .who { justify-content: flex-end; color: var(--muted); }
+.msg.user .body { background: var(--user-bg); border-color: var(--user-line); color: var(--user-text); white-space: pre-wrap; border-radius: var(--r-lg) 4px var(--r-lg) var(--r-lg); }
+.msg.system { align-self: stretch; max-width: none; width: auto; display: flex; align-items: center; gap: 12px; }
+.msg.system::before, .msg.system::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.msg.system .body { flex: 0 1 auto; max-width: 78%; font-size: 12px; line-height: 1.5; color: var(--muted); padding: 3px 12px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 99px; }
+.body p { margin: 0 0 8px; } .body p:last-child { margin: 0; }
+.body h2, .body h3, .body h4 { font-size: 14.5px; font-weight: 650; margin: 12px 0 4px; }
+.body > :first-child { margin-top: 0; }
+.body ul, .body ol { margin: 4px 0 8px; padding-left: 22px; } .body li { margin: 2px 0; }
+.body a { color: var(--accent); }
+.body pre { background: color-mix(in srgb, var(--panel) 70%, transparent); border: 1px solid var(--line); padding: 10px 12px; border-radius: 8px; overflow-x: auto; font: 12.5px/1.55 var(--mono); }
+.body code { font: 12.5px var(--mono); background: rgba(127,127,127,.14); padding: 1px 5px; border-radius: 4px; }
+.body pre code { background: none; padding: 0; }
+.body table { border-collapse: collapse; margin: 8px 0; font-size: 13px; display: block; overflow-x: auto; max-width: 100%; }
+.body td, .body th { border: 1px solid var(--line); padding: 5px 9px; }
+.body tr:first-child td { font-weight: 600; background: rgba(127,127,127,.08); }
+
+.card { margin: 0 24px 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); box-shadow: var(--shadow-md); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.card .ci { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; background: var(--sunken); color: var(--muted); }
+.card .q { flex: 1; min-width: 220px; font-size: 13.5px; line-height: 1.5; }
+.card .q b { display: block; font-size: 14px; margin-bottom: 1px; }
+.card.approve, .card.continue, .card.retry { background: var(--warn-bg); border-color: var(--warn-line); }
+.card.approve .ci, .card.continue .ci, .card.retry .ci { background: var(--warn); color: var(--panel); }
+.card.ask .ci { background: var(--user-bg); color: var(--accent); box-shadow: inset 0 0 0 1px var(--user-line); }
+.running-bar { margin: 0 24px 10px; align-self: flex-start; font-size: 12.5px; color: var(--muted); display: inline-flex; gap: 8px; align-items: center; padding: 3px 4px 3px 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--panel); }
+.running-bar b { color: var(--text); font-weight: 600; }
+#rstate { display: flex; flex-direction: column; }
+.composer { padding: 4px 24px 14px; }
+.cbox { display: flex; gap: 8px; align-items: flex-end; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); box-shadow: var(--shadow-sm); transition: border-color .15s, box-shadow .15s; }
+.cbox:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.cbox textarea { border: 0; padding: 6px 0; min-height: 34px; max-height: 220px; resize: none; background: transparent; box-shadow: none; font-size: 14.5px; }
+.cbox textarea:focus { box-shadow: none; }
+.cbox button { min-height: 34px; padding: 6px 16px; }
+.hint { font-size: 11.5px; color: var(--muted); margin: 6px 4px 0; }
+
+/* ---------- steps (what each agent is doing, like its own CLI) ---------- */
+.msg.agentmsg { width: 100%; max-width: 920px; }
+.msg.agentmsg .mc { flex: 1; min-width: 0; }
+.steps-box { margin: 0 0 8px; }
+.steps-box > summary { cursor: pointer; font-size: 12.5px; color: var(--muted); list-style: none; display: inline-flex; gap: 6px; align-items: center; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--panel); }
+.steps-box > summary::-webkit-details-marker { display: none; }
+.steps-box > summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
+.steps-box[open] > summary::before { transform: rotate(90deg); }
+.steps { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.st { font-size: 13px; }
+.st details { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; }
+.st summary { display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; list-style: none; min-height: 30px; }
+.st summary::-webkit-details-marker { display: none; }
+.st summary:hover { background: var(--panel-2); }
+.st .si { width: 18px; text-align: center; flex: none; font: 12px var(--mono); color: var(--muted); }
+.st .sn { font-weight: 600; flex: none; }
+.st .stt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12.5px var(--mono); color: var(--text); }
+.st .ssub { color: var(--muted); font-size: 12px; flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st .sst { flex: none; font-size: 12px; font-variant-numeric: tabular-nums; }
+.st.s-ok .sst { color: var(--ok); } .st.s-err .sst { color: var(--bad); } .st.s-err details { border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+.st .sst .cnt-a { color: var(--ok); } .st .sst .cnt-d { color: var(--bad); }
+.st pre { margin: 0; padding: 8px 12px; max-height: 320px; overflow: auto; font: 12px/1.5 var(--mono); background: var(--sunken); border-top: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.st pre .add { display: block; } .st pre .del { display: block; }
+.st.k-text .md { padding: 2px 2px 2px 4px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.st.k-think details { background: transparent; border-style: dashed; }
+.st.k-think .stt { font-family: inherit; color: var(--muted); font-style: italic; }
+.st.k-think pre { background: transparent; color: var(--muted); font-family: inherit; font-size: 12.5px; }
+.st.k-error { color: var(--bad); font-size: 12.5px; padding: 2px 4px; }
+.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--line-strong); border-top-color: var(--claude); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; }
+.codex .spin, .spin.codex { border-top-color: var(--codex); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.caret::after { content: "▍"; animation: blink 1s steps(2) infinite; color: var(--muted); margin-left: 1px; }
+@keyframes blink { 50% { opacity: 0; } }
+.live-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; color: var(--muted); }
+.msg.agentmsg.claude .body { margin-top: 2px; } .msg.agentmsg.codex .body { margin-top: 2px; }
+
+/* ---------- project picker ---------- */
+.projects { display: flex; flex-direction: column; gap: 6px; }
+.proj { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); }
+.proj .pi { font-size: 16px; flex: none; }
+.proj .pt { flex: 1; min-width: 0; }
+.proj .pn { font-weight: 600; font-size: 13.5px; display: flex; gap: 6px; align-items: center; }
+.proj .pp { font: 11.5px var(--mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proj-add { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.proj-add input { flex: 1; min-width: 220px; }
+.recent { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.recent button { font-size: 12px; min-height: 26px; padding: 2px 10px; border-radius: 99px; }
+.cmd-line { display: flex; gap: 8px; align-items: center; margin: 6px 0 14px; }
+.cmd-line code { flex: 1; font: 12.5px var(--mono); background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+
+/* ---------- new task ---------- */
+.new-wrap { overflow-y: auto; flex: 1; }
+.new { max-width: 760px; margin: 40px auto; padding: 0 24px; width: 100%; }
+.new h2 { font-size: 24px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.3px; }
+.new > .meta { font-size: 13.5px; line-height: 1.6; margin-bottom: 20px; }
+.form-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 20px 20px; box-shadow: var(--shadow-sm); }
+.form-card textarea#n-task { font-size: 14.5px; line-height: 1.6; }
+.form-foot { margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.form-foot button.primary { min-height: 38px; padding: 8px 20px; }
+#n-err { color: var(--bad); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ---------- dialogs ---------- */
+dialog { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); color: var(--text); width: min(780px, 94vw); padding: 0; box-shadow: var(--shadow-lg); }
+dialog::backdrop { background: rgba(10,10,10,.45); backdrop-filter: blur(2px); }
+.dlg { display: flex; flex-direction: column; max-height: 88vh; }
+.dlg-head { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.dlg-head b { flex: 1; font-size: 15px; }
+.dlg-body { padding: 4px 20px 16px; overflow-y: auto; }
+.dlg-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--panel-2); border-radius: 0 0 var(--r-lg) var(--r-lg); }
+#dlg-diff .dlg-body { padding: 16px 20px 20px; }
+dialog pre { max-height: 70vh; overflow: auto; font: 12px/1.55 var(--mono); background: var(--sunken); border: 1px solid var(--line); padding: 12px; border-radius: 8px; white-space: pre; margin: 0; }
+.add { color: var(--ok); background: var(--ok-bg); } .del { color: var(--bad); background: var(--bad-bg); }
+fieldset { border: 1px solid var(--line); border-radius: var(--r); margin: 14px 0; padding: 4px 16px 16px; }
+legend { font-size: 13px; font-weight: 650; padding: 0 6px; }
+.empty { color: var(--muted); font-size: 13px; padding: 10px; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 1100px) { .app { grid-template-columns: 220px 1fr; } }
+@media (max-width: 700px) { .app { grid-template-columns: 1fr; } aside { display: none; } .row { grid-template-columns: 1fr; } .msgs, .room-head { padding-left: 14px; padding-right: 14px; } .card, .running-bar { margin-left: 14px; margin-right: 14px; } .composer { padding: 4px 14px 12px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="logo" aria-hidden="true"></span><h1>Office Room</h1></div>
+    <div class="agent claude" id="st-claude"><span class="dot"></span><b class="an">claude</b></div>
+    <div class="agent codex" id="st-codex"><span class="dot"></span><b class="an">codex</b></div>
+    <span class="spacer"></span>
+    <button class="ghost icon" id="theme-btn" onclick="cycleTheme()"></button>
+    <button class="ghost icon" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>ตั้งค่า</button>
+  </header>
+  <aside>
+    <button class="primary new-btn" onclick="select(null)">+ งานใหม่</button>
+    <div class="side-label">ห้องงาน</div>
+    <div id="rooms"></div>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<dialog id="dlg-diff"><div class="dlg"><div class="dlg-head"><b>สิ่งที่ทีมแก้ไป (diff)</b><button onclick="this.closest('dialog').close()">ปิด</button></div><div class="dlg-body"><pre id="diff"></pre></div></div></dialog>
+<dialog id="dlg-sessions"><div class="dlg"><div class="dlg-head"><b>เปิดคุยต่อใน CLI / VS Code</b><button onclick="this.closest('dialog').close()">ปิด</button></div><div class="dlg-body" id="sessions"></div></div></dialog>
+<dialog id="dlg-settings"><form id="settings-form" class="dlg" method="dialog"></form></dialog>
+
+<script>
+const S = { rooms: [], room: null, agents: {}, settings: null, current: null, open: {}, newDirs: null };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const api = async (url, body, method) => {
+  const r = await fetch(url, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json', 'x-office': '1' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+};
+const time = (t) => new Date(t).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+// ---------- theme (auto / light / dark, stored in this browser only) ----------
+const THEMES = {
+  auto: ['ธีม: ตามเครื่อง', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>'],
+  light: ['ธีม: สว่าง', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'],
+  dark: ['ธีม: มืด', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'],
+};
+function renderTheme() {
+  const t = document.documentElement.dataset.theme || 'auto'; const [label, icon] = THEMES[t];
+  const b = $('#theme-btn'); b.innerHTML = icon; b.title = label + ' (กดเพื่อสลับ)'; b.setAttribute('aria-label', label);
+}
+function cycleTheme() {
+  const order = ['auto', 'light', 'dark']; const cur = document.documentElement.dataset.theme || 'auto';
+  const next = order[(order.indexOf(cur) + 1) % order.length];
+  if (next === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = next;
+  try { if (next === 'auto') localStorage.removeItem('office-theme'); else localStorage.setItem('office-theme', next); } catch {}
+  renderTheme();
+}
+renderTheme();
+
+// tiny markdown: code fences, headings, lists, tables, bold, inline code, links
+function md(src) {
+  const out = []; const lines = String(src).split('\n'); let i = 0;
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  while (i < lines.length) {
+    const l = lines[i];
+    if (/^```/.test(l)) { const b = []; i++; while (i < lines.length && !/^```/.test(lines[i])) b.push(lines[i++]); i++; out.push(`<pre><code>${esc(b.join('\n'))}</code></pre>`); continue; }
+    const h = l.match(/^(#{1,4})\s+(.*)/); if (h) { out.push(`<h3>${inline(h[2])}</h3>`); i++; continue; }
+    if (/^\s*\|.*\|\s*$/.test(l)) { const rows = []; while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(lines[i++]);
+      out.push('<table>' + rows.filter((r) => !/^\s*\|[\s:|-]+\|\s*$/.test(r)).map((r) => '<tr>' + r.trim().slice(1, -1).split('|').map((c) => `<td>${inline(c.trim())}</td>`).join('') + '</tr>').join('') + '</table>'); continue; }
+    if (/^\s*([-*]|\d+\.)\s+/.test(l)) { const ord = /^\s*\d+\./.test(l); const items = [];
+      while (i < lines.length && /^\s*([-*]|\d+\.)\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*([-*]|\d+\.)\s+/, ''));
+      out.push(`<${ord ? 'ol' : 'ul'}>${items.map((x) => `<li>${inline(x)}</li>`).join('')}</${ord ? 'ol' : 'ul'}>`); continue; }
+    if (!l.trim()) { i++; continue; }
+    const p = []; while (i < lines.length && lines[i].trim() && !/^(```|#{1,4}\s|\s*([-*]|\d+\.)\s|\s*\|)/.test(lines[i])) p.push(lines[i++]);
+    out.push(`<p>${p.map(inline).join('<br>')}</p>`);
+  }
+  return out.join('');
+}
+
+// ---------- render ----------
+const DAYS = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+const STATUS = { running: 'กำลังทำ', waiting: 'รอคุณ', done: 'เสร็จ', idle: 'ว่าง' };
+function resetText(t) {
+  if (!t) return '';
+  if (t <= Date.now()) return 'รีเซ็ตแล้ว';
+  const d = new Date(t), now = new Date();
+  const hm = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  return d.toDateString() === now.toDateString() ? hm : `${DAYS[d.getDay()]} ${d.getDate()} ${hm}`;
+}
+function leftText(t) {
+  const m = Math.max(0, Math.round((t - Date.now()) / 60000));
+  return m >= 1440 ? `อีก ${Math.floor(m / 1440)} วัน ${Math.floor((m % 1440) / 60)} ชม.` : m >= 60 ? `อีก ${Math.floor(m / 60)} ชม. ${m % 60} น.` : `อีก ${m} น.`;
+}
+const WLABEL = { '5h': '5 ชม.', '7d': '7 วัน' };
+function renderAgents() {
+  for (const a of ['claude', 'codex']) {
+    const s = S.agents[a] || {}; const el = $('#st-' + a);
+    const rest = s.restingUntil && s.restingUntil > Date.now();
+    const wins = (s.windows || []).map((w) => {
+      const used = w.resetsAt && w.resetsAt <= Date.now() ? 0 : w.used;
+      const cls = used >= 90 ? 'bad' : used >= 70 ? 'warn' : '';
+      return `<span class="win" title="${esc(WLABEL[w.key] || w.key)}: ใช้ไป ${used}%${w.resetsAt ? ` · รีเซ็ต ${esc(resetText(w.resetsAt))} (${esc(leftText(w.resetsAt))})` : ''}">
+        <span class="wk">${esc(WLABEL[w.key] || w.key)}</span><span class="bar"><i class="${cls}" style="width:${Math.min(100, used)}%"></i></span><b class="${cls}">${used}%</b>
+        <span class="rs">${w.resetsAt ? '↻ ' + esc(resetText(w.resetsAt)) : ''}</span></span>`;
+    }).join('');
+    const state = !s.installed ? '<span class="badge off">ไม่ได้ติดตั้ง</span>'
+      : rest ? `<span class="badge rest">พักถึง ${time(s.restingUntil)}</span><button class="ghost mini" title="ล้างสถานะพัก" aria-label="ล้างสถานะพักของ ${a}" onclick="resetLimit('${a}')">ล้าง</button>`
+      : '<span class="badge ok">พร้อม</span>';
+    const upd = s.updatedAt ? `อัปเดต ${time(s.updatedAt)}` : 'ยังไม่มีข้อมูล';
+    el.innerHTML = `<span class="dot ${!s.installed ? 'off' : rest ? 'rest' : ''}"></span><b class="an">${a}</b>${state}${wins}
+      <button class="ghost mini" aria-label="เช็คการใช้งานของ ${a} ใหม่" title="${upd}${a === 'claude' ? ' · กดเพื่อเช็คใหม่ (เรียก Haiku สั้นๆ ~$0.001)' : ' · อ่านจากไฟล์ session ของ Codex ไม่เสีย credit'}" onclick="refreshUsage('${a}', this)">⟳</button>`;
+  }
+  syncOffice();
+}
+async function refreshUsage(a, btn) { btn.disabled = true; try { await api(`/api/agents/${a}/refresh`, {}); } finally { btn.disabled = false; } }
+function renderRooms() {
+  $('#rooms').innerHTML = S.rooms.map((r) => `<div class="room-item ${S.current === r.id ? 'active' : ''}" role="button" tabindex="0" onclick="select('${r.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();select('${r.id}')}">
+    <span class="dot ${r.status === 'running' ? 'run' : r.status}"></span><span class="rt" title="${esc(r.title)}">${esc(r.title)}</span>${r.status === 'running' || r.status === 'waiting' ? `<span class="badge ${r.status}">${STATUS[r.status]}</span>` : ''}</div>`).join('') || '<div class="empty">ยังไม่มีงาน</div>';
+}
+// ---------- new task + project picker ----------
+const base = (p) => String(p).split('/').filter(Boolean).pop() || p;
+function renderNew() {
+  S.rendered = null;
+  const st = S.settings || {};
+  if (!S.newDirs) {
+    S.newDirs = (st.lastDirs || []).map((p) => ({ path: p, ok: true }));
+    if (S.newDirs.length) api('/api/check-dirs', { paths: S.newDirs.map((d) => d.path) }).then((r) => { S.newDirs = r.dirs.filter((d) => d.ok); renderProjects(); }).catch(() => {});
+  }
+  $('#main').innerHTML = `<div class="new-wrap"><div class="new">
+    <h2>งานใหม่</h2><div class="meta">ใส่โจทย์ครั้งเดียว แล้วระบบจะใช้ model ราคาถูกเลือกว่าใครนำ จากนั้นทั้งสองตัวจะคุยกันเอง และจะถามหรือขออนุมัติเมื่อจำเป็น</div>
+    <div class="form-card">
+    <label for="n-task">โจทย์</label><textarea id="n-task" rows="7" placeholder="อยากให้ทำอะไร เล่าแบบที่เล่าให้ทีม dev ฟัง"></textarea>
+    <label>โปรเจกต์ (เลือกได้มากกว่า 1 โฟลเดอร์ โฟลเดอร์แรกเป็นที่ทำงานหลัก)</label>
+    <div class="projects" id="n-projects"></div>
+    <div class="proj-add">
+      <button class="icon" onclick="pickFolders(this)">📁 เลือกโฟลเดอร์…</button>
+      <input id="n-path" placeholder="หรือพิมพ์ path เช่น ~/Documents/my-app แล้วกด Enter">
+      <button onclick="addTyped()">เพิ่ม</button>
+    </div>
+    <div class="recent" id="n-recent"></div>
+    <div class="row"><div><label for="n-skills">สกิลที่บังคับใช้ (ไม่ใส่ก็ได้ คั่นด้วย ,)</label><input id="n-skills" placeholder="เช่น ktc, senior-qa"></div>
+    <div><label for="n-lead">ใครนำ</label><select id="n-lead"><option value="auto">ให้ระบบเลือก (แนะนำ)</option><option value="claude">Claude</option><option value="codex">Codex</option></select></div></div>
+    <div class="form-foot"><button class="primary" id="n-go" onclick="createRoom()">เริ่มงาน</button><span class="meta"><kbd>⌘</kbd> + <kbd>Enter</kbd> เพื่อเริ่ม</span><span class="meta" id="n-err" role="alert"></span></div>
+    </div>
+  </div></div>`;
+  renderProjects();
+  $('#n-task').focus();
+  $('#n-task').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) createRoom(); });
+  $('#n-path').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTyped(); } });
+}
+function renderProjects() {
+  const box = $('#n-projects'); if (!box) return;
+  const dirs = S.newDirs || [];
+  box.innerHTML = dirs.map((d, i) => `<div class="proj"><span class="pi" aria-hidden="true">📁</span><div class="pt">
+      <div class="pn">${esc(base(d.path))}${i === 0 ? '<span class="badge ok">หลัก</span>' : ''}${d.git === false ? '<span class="badge rest" title="ดู diff และย้อนกลับอัตโนมัติไม่ได้">ไม่ใช่ git</span>' : ''}</div>
+      <div class="pp" title="${esc(d.path)}">${esc(d.path)}</div></div>
+      ${i > 0 ? `<button class="ghost mini" onclick="mainProject(${i})">ตั้งเป็นหลัก</button>` : ''}
+      <button class="ghost mini" aria-label="เอาออก" onclick="removeProject(${i})">✕</button></div>`).join('')
+    || '<div class="empty">ยังไม่ได้เลือกโปรเจกต์</div>';
+  const chosen = new Set(dirs.map((d) => d.path));
+  const recent = (S.settings?.recentDirs || []).filter((p) => !chosen.has(p));
+  $('#n-recent').innerHTML = recent.length ? '<span class="meta" style="align-self:center">ล่าสุด:</span>' + recent.map((p) => `<button title="${esc(p)}" onclick="addDirs(['${esc(p).replace(/'/g, "\\'")}'])">+ ${esc(base(p))}</button>`).join('') : '';
+}
+function addChecked(list) {
+  const have = new Set(S.newDirs.map((d) => d.path));
+  for (const d of list) if (d.ok && !have.has(d.path)) { S.newDirs.push(d); have.add(d.path); }
+  const bad = list.filter((d) => !d.ok).map((d) => d.path);
+  $('#n-err').textContent = bad.length ? 'ไม่พบโฟลเดอร์: ' + bad.join(', ') : '';
+  renderProjects();
+}
+async function addDirs(paths) { addChecked((await api('/api/check-dirs', { paths })).dirs); }
+async function addTyped() { const v = $('#n-path').value.trim(); if (!v) return; await addDirs([v]); if (!$('#n-err').textContent) $('#n-path').value = ''; }
+// inside the app: native macOS folder panel; in a browser: Finder dialog opened by the server
+const bridge = window.webkit?.messageHandlers?.office;
+function nativePick() {
+  return new Promise((res) => { window.__officePicked = (paths) => { window.__officePicked = null; res(paths || []); }; bridge.postMessage({ cmd: 'pickFolders', start: S.newDirs?.[0]?.path || S.settings?.lastDirs?.[0] || '' }); });
+}
+async function pickFolders(btn) {
+  btn.disabled = true;
+  try {
+    if (bridge) { const paths = await nativePick(); if (paths.length) await addDirs(paths); }
+    else addChecked((await api('/api/pick-folder', {})).dirs);
+  } finally { btn.disabled = false; }
+}
+function copyText(text, btn) {
+  if (bridge) bridge.postMessage({ cmd: 'copy', text }); else navigator.clipboard?.writeText(text);
+  if (btn) btn.textContent = 'คัดลอกแล้ว';
+}
+function removeProject(i) { S.newDirs.splice(i, 1); renderProjects(); }
+function mainProject(i) { S.newDirs.unshift(S.newDirs.splice(i, 1)[0]); renderProjects(); }
+
+// ---------- steps: each tool call / command / edit, streamed live like the agent's own CLI ----------
+const ICON = { Read: '📄', Edit: '✏️', MultiEdit: '✏️', Write: '📝', NotebookEdit: '📓', Grep: '🔎', Glob: '🗂', WebFetch: '🌐', WebSearch: '🔎', Skill: '✨', Task: '🤖', Agent: '🤖', TodoWrite: '📋', MCP: '🔌', Image: '🖼' };
+const tail = (s, n = 12000) => { s = String(s ?? ''); return s.length > n ? '…' + s.slice(-n) : s; };
+const stripNext = (s) => String(s || '').replace(/\[\[NEXT[^\]]*\]\]/gi, '').trim();
+function diffHtml(d) { return esc(d).split('\n').map((l) => /^\+/.test(l) ? `<span class="add">${l}</span>` : /^-/.test(l) ? `<span class="del">${l}</span>` : l).join('\n'); }
+function counts(d) { let a = 0, x = 0; for (const l of String(d || '').split('\n')) { if (/^\+(?!\+\+)/.test(l)) a++; else if (/^-(?!--)/.test(l)) x++; } return { a, x }; }
+function stepInner(s, key, live) {
+  const run = s.status === 'run';
+  const st = run ? '<span class="spin"></span>' : s.status === 'err' ? (s.exit != null ? `✗ exit ${s.exit}` : '✗') : s.status === 'ok' ? '✓' : '';
+  const open = key in S.open ? S.open[key] : run && live && (s.kind === 'cmd' || s.kind === 'think');
+  const det = (summary, inner) => `<details data-key="${key}" ${open ? 'open' : ''}><summary>${summary}</summary>${inner}</details>`;
+  switch (s.kind) {
+    case 'text': return `<div class="md body${live && S.liveTextIdx === s.__i ? ' caret' : ''}">${md(stripNext(s.body))}</div>`;
+    case 'think': if (!String(s.body || '').trim()) return run && live ? `<span class="live-tag"><span class="spin"></span>กำลังคิด…</span>` : '';
+      return det(`<span class="si">💭</span><span class="stt">${run ? 'กำลังคิด…' : 'ความคิด'}</span>`, `<pre>${esc(tail(s.body, 4000))}</pre>`);
+    case 'cmd': return det(`<span class="si">❯</span><span class="stt" title="${esc(s.title)}">${esc(s.title)}</span>${s.sub ? `<span class="ssub">${esc(s.sub)}</span>` : ''}<span class="sst">${st}</span>`,
+      s.output ? `<pre>${esc(tail(s.output, 6000))}</pre>` : '');
+    case 'edit': { const c = counts(s.diff);
+      return det(`<span class="si">${ICON[s.name] || '✏️'}</span><span class="sn">${esc(s.name || 'แก้ไฟล์')}</span><span class="stt" title="${esc(s.title)}">${esc(s.title || '')}</span><span class="sst"><span class="cnt-a">+${c.a}</span> <span class="cnt-d">−${c.x}</span> ${st}</span>`,
+        (s.diff ? `<pre>${diffHtml(tail(s.diff, 8000))}</pre>` : '') + (s.output && s.status === 'err' ? `<pre>${esc(tail(s.output, 2000))}</pre>` : '')); }
+    case 'plan': return det(`<span class="si">📋</span><span class="sn">${esc(s.title || 'แผนงาน')}</span><span class="stt"></span>`, `<pre>${esc(s.body || '')}</pre>`);
+    case 'error': return `<div>⚠️ ${esc(s.title)}</div>`;
+    default: return det(`<span class="si">${ICON[s.name] || '🔧'}</span><span class="sn">${esc(s.name || '')}</span><span class="stt" title="${esc(s.title)}">${esc(s.title || '')}</span><span class="sst">${st}</span>`,
+      s.output ? `<pre>${esc(tail(s.output, 6000))}</pre>` : '');
+  }
+}
+function stepHtml(s, i, owner, live) {
+  s.__i = i;
+  const inner = stepInner(s, `${owner}-${i}`, live);
+  return inner ? `<div class="st k-${s.kind || 'tool'} s-${s.status || 'none'}" data-i="${i}">${inner}</div>` : `<div class="st" data-i="${i}" hidden></div>`;
+}
+function stepsHtml(steps, owner, live) { return steps.map((s, i) => stepHtml(s, i, owner, live)).join(''); }
+// remember which step boxes the user opened/closed, so live re-renders keep them
+document.addEventListener('toggle', (e) => { const k = e.target?.dataset?.key; if (k) S.open[k] = e.target.open; }, true);
+
+function msgHtml(m) {
+  const meta = m.meta || {};
+  const steps = m.steps && m.steps.length ? `<details class="steps-box" data-key="box-${m.id}" ${S.open['box-' + m.id] ? 'open' : ''}><summary>ขั้นตอนการทำงาน ${m.steps.length} ขั้น${meta.secs ? ` · ${fmtSecs(meta.secs)}` : ''}</summary><div class="steps">${stepsHtml(m.steps, m.id, false)}</div></details>` : '';
+  if (m.from === 'system') return `<div class="msg system"><div class="body">${esc(m.text)}</div></div>${steps ? `<div class="msg agentmsg"><div class="mc">${steps}</div></div>` : ''}`;
+  const chip = m.from === 'user' ? (meta.live ? `ส่งถึง ${meta.live} ระหว่างทำงาน` : '') : [meta.model, meta.effort, meta.mode && meta.mode.toUpperCase(), meta.to && ('→ ' + meta.to + (meta.kind ? ' ' + meta.kind : '') + (meta.nextEffort ? ` (${meta.nextEffort}${meta.nextMode === 'write' ? ', write' : ''})` : '')), meta.tokens ? `${(meta.tokens / 1000).toFixed(1)}k tok` : ''].filter(Boolean).join(' · ');
+  const av = m.from === 'user' ? '' : `<div class="av" aria-hidden="true">${esc(String(m.from || '?').charAt(0).toUpperCase())}</div>`;
+  return `<div class="msg ${m.from}${m.from !== 'user' ? ' agentmsg' : ''}">${av}<div class="mc"><div class="who">${m.from === 'user' ? 'คุณ' : m.from}<span class="chip">${esc(chip)}</span><span class="chip">${time(m.ts)}</span></div>
+    ${steps}<div class="body">${m.from === 'user' ? esc(m.text) : md(m.text)}</div></div></div>`;
+}
+const fmtSecs = (s) => (s >= 60 ? `${Math.floor(s / 60)} นาที ${s % 60} วิ` : `${s} วิ`);
+function liveHtml(L) {
+  if (!L) return '';
+  const last = L.steps.length - 1;
+  S.liveTextIdx = last >= 0 && L.steps[last].kind === 'text' ? last : -1;
+  return `<div class="msg ${L.agent} agentmsg" id="live"><div class="av" aria-hidden="true">${esc(L.agent.charAt(0).toUpperCase())}</div><div class="mc">
+    <div class="who">${esc(L.agent)}<span class="chip">${esc([L.model, L.effort, (L.mode || '').toUpperCase()].filter(Boolean).join(' · '))}</span>
+    <span class="live-tag"><span class="spin ${esc(L.agent)}"></span><span id="live-clock">${fmtSecs(Math.round((Date.now() - L.startedAt) / 1000))}</span></span></div>
+    <div class="steps" id="live-steps">${stepsHtml(L.steps, 'live', true)}</div></div></div>`;
+}
+function scrollIfNear(fn) {
+  const box = $('#msgs'); const near = box && box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+  fn(); if (near && box) box.scrollTop = box.scrollHeight;
+}
+function liveStepEl(i) {
+  const L = S.room?.live; const host = $('#live-steps'); if (!L || !host) return;
+  const s = L.steps[i]; if (!s) return;
+  const last = L.steps.length - 1;
+  S.liveTextIdx = last >= 0 && L.steps[last].kind === 'text' ? last : -1;
+  const html = stepHtml(s, i, 'live', true);
+  const old = host.querySelector(`:scope > [data-i="${i}"]`);
+  if (old) old.outerHTML = html; else host.insertAdjacentHTML('beforeend', html);
+  // the caret only sits on the newest text step
+  host.querySelectorAll('.caret').forEach((el) => { if (+el.closest('.st').dataset.i !== S.liveTextIdx) el.classList.remove('caret'); });
+}
+const dirty = new Set(); let raf = 0;
+function queueStep(i) { dirty.add(i); if (!raf) raf = requestAnimationFrame(() => { raf = 0; scrollIfNear(() => { for (const j of dirty) liveStepEl(j); }); dirty.clear(); }); }
+setInterval(() => { const c = $('#live-clock'); const L = S.room?.live; if (c && L) c.textContent = fmtSecs(Math.round((Date.now() - L.startedAt) / 1000)); }, 1000);
+
+function autoGrow() { const t = $('#input'); if (!t) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 220) + 'px'; }
+// Send only the selected room's real state and messages to the native 3D view.
+let sceneTimer = 0;
+function syncOffice() {
+  if (!window.webkit?.messageHandlers?.office || sceneTimer) return;
+  sceneTimer = setTimeout(() => {
+    sceneTimer = 0;
+    const r = S.room;
+    const state = { cmd: 'sceneState' };
+    if (r) {
+      state.title = r.title || 'ห้องทำงาน';
+      for (const agent of ['claude', 'codex']) {
+        const working = (r.live?.agent || r.running?.agent) === agent;
+        const step = working ? [...(r.live?.steps || [])].reverse().find((s) => s.status === 'run' || s.kind === 'text') : null;
+        const activity = step?.kind === 'think' ? 'กำลังคิด' : step?.kind === 'text' ? 'กำลังตอบ' : step?.kind === 'edit' ? 'กำลังแก้ไฟล์' : step?.kind === 'cmd' ? 'กำลังรันคำสั่ง' : 'กำลังทำงาน';
+        const waiting = r.status === 'waiting' && r.waiting?.from === agent;
+        const info = S.agents[agent];
+        const available = info && !info.installed ? 'ไม่ได้ติดตั้ง' : info?.restingUntil > Date.now() ? 'พักชั่วคราว' : 'พร้อม';
+        const last = [...(r.messages || [])].reverse().find((m) => m.from === agent && m.text);
+        const liveText = working ? [...(r.live?.steps || [])].reverse().find((s) => s.kind === 'text' && s.body?.trim())?.body : '';
+        const text = stripNext(liveText || last?.text || '').replace(/\s+/g, ' ').trim();
+        state[agent] = { working, state: working ? activity : waiting ? 'รอคุณ' : available, message: text ? (liveText ? 'กำลังตอบ: ' : 'ข้อความล่าสุด: ') + text.slice(0, 180) : '' };
+      }
+    }
+    window.webkit.messageHandlers.office.postMessage(state);
+  }, 200);
+}
+function renderRoom(scroll) {
+  syncOffice();
+  const r = S.room; if (!r) return renderNew();
+  const box = $('#msgs'); const atBottom = !box || box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+  const w = r.waiting || {}; let card = '';
+  if (r.status === 'waiting') {
+    if (w.kind === 'approve') card = `<div class="card approve"><span class="ci" aria-hidden="true">✓</span><div class="q"><b>${esc(w.from)} ขออนุมัติ</b> ตรวจแผนด้านบนแล้วเลือก หรือพิมพ์ด้านล่างเพื่อขอให้แก้แผน</div>
+      <button class="primary" onclick="decide('approve')">อนุมัติให้ลงมือ</button><button onclick="decide('cancel')">ยกเลิกงาน</button></div>`;
+    else if (w.kind === 'continue') card = `<div class="card continue"><span class="ci" aria-hidden="true">↻</span><div class="q"><b>ให้ทำต่อไหม</b> ทั้งสองตัวคุยกันเองหลายรอบแล้ว</div><button class="primary" onclick="decide('continue')">ทำต่อ</button><button onclick="decide('cancel')">หยุดงาน</button></div>`;
+    else if (w.kind === 'retry' || w.kind === 'limit') card = `<div class="card retry"><span class="ci" aria-hidden="true">!</span><div class="q"><b>งานหยุดชั่วคราว</b> ดูข้อความระบบด้านบน</div><button class="primary" onclick="decide('retry')">ลองใหม่</button><button onclick="decide('cancel')">ยกเลิกงาน</button></div>`;
+    else card = `<div class="card ask"><span class="ci" aria-hidden="true">?</span><div class="q">${w.from ? `<b>${esc(w.from)} รอคำตอบจากคุณ</b>` : '<b>รอคำสั่งจากคุณ</b>'} พิมพ์ด้านล่าง (ขึ้นต้น @claude หรือ @codex เพื่อส่งถึงตัวที่ต้องการ)</div><button onclick="decide('cancel')">ปิดงาน</button></div>`;
+  }
+  const run = r.running && r.running.agent === 'dispatcher' ? `<div class="running-bar"><span class="dot run"></span><span>กำลังเลือกว่าใครนำ…</span></div>`
+    : r.running ? `<div class="running-bar"><span class="dot run"></span><span><b>${esc(r.running.agent)}</b> กำลังทำงาน</span><button class="ghost mini" onclick="stopRun()">หยุด</button></div>` : '';
+  const usage = Object.entries(r.usage || {}).map(([a, u]) => `${a} ${u.calls} รอบ ~${(u.tokens / 1000).toFixed(0)}k tok${u.usd ? ` $${u.usd}` : ''}`).join(' · ');
+  if (S.rendered !== r.id || !$('#input')) {
+    S.rendered = r.id;
+    $('#main').innerHTML = `<div class="room-head" id="rhead"></div><div class="msgs" id="msgs" aria-live="polite"></div><div id="rstate"></div>
+      <div class="composer"><div class="cbox"><textarea id="input" rows="1" aria-label="พิมพ์ข้อความ"></textarea><button class="primary" onclick="sendMsg()">ส่ง</button></div>
+      <div class="hint"><kbd>Enter</kbd> ส่ง · <kbd>Shift</kbd>+<kbd>Enter</kbd> ขึ้นบรรทัด · ขึ้นต้น @claude หรือ @codex เพื่อส่งถึงตัวที่ต้องการ</div></div>`;
+    const inp = $('#input');
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMsg(); } });
+    inp.addEventListener('input', autoGrow);
+  }
+  const sep = '<span class="sep">·</span>';
+  const dirs = r.dirs || [r.dir];
+  $('#rhead').innerHTML = `<div class="th"><div class="t" title="${esc(r.task)}"><span class="tt">${esc(r.title)}</span><span class="badge ${esc(r.status)}">${esc(STATUS[r.status] || r.status)}</span></div>
+      <div class="meta"><span title="${esc(dirs.join('\n'))}">📁 ${esc(dirs.map(base).join(', '))}</span>${r.lead ? `${sep}Lead: ${esc(r.lead)}` : ''}${r.approved ? `${sep}<span style="color:var(--ok)">อนุมัติแล้ว</span>` : ''}${usage ? sep + esc(usage) : ''}</div></div>
+      <button onclick="showSessions()" title="คำสั่งเปิดคุยต่อใน Claude Code / Codex">Sessions</button><button onclick="showDiff()">Diff</button><button class="ghost danger" onclick="delRoom()">ลบ</button>`;
+  $('#msgs').innerHTML = r.messages.map(msgHtml).join('') + liveHtml(r.live);
+  $('#rstate').innerHTML = run + card;
+  const ra = r.running?.agent;
+  $('#input').placeholder = ra === 'codex' ? 'พิมพ์แทรกได้ Codex จะได้รับทันทีระหว่างทำงาน' : ra ? 'พิมพ์แทรกได้ จะส่งให้ในรอบถัดไป' : 'พิมพ์ข้อความ… (Enter ส่ง, Shift+Enter ขึ้นบรรทัด)';
+  const nb = $('#msgs'); if (scroll || atBottom) nb.scrollTop = nb.scrollHeight;
+}
+function showSessions() {
+  const r = S.room; const dir = (r.dirs || [r.dir])[0]; const s = r.sessions || {};
+  const line = (label, cmd) => `<label>${label}</label><div class="cmd-line"><code>${esc(cmd)}</code><button class="mini" onclick="copyText(${esc(JSON.stringify(cmd))}, this)">คัดลอก</button></div>`;
+  $('#sessions').innerHTML = `<p class="meta">แต่ละตัวทำงานใน session จริงของตัวเอง เปิดคุยต่อหรือย้อนดูใน CLI ได้ (ควรทำตอนที่ห้องไม่ได้ให้ตัวนั้นทำงานอยู่)</p>
+    ${s.claude ? line('Claude Code', `cd "${dir}" && claude --resume ${s.claude}`) : '<p class="meta">Claude ยังไม่ได้เริ่มทำงานในห้องนี้</p>'}
+    ${s.codex ? line('Codex (ดูได้ในประวัติของ Codex VS Code extension ด้วย)', `cd "${dir}" && codex resume ${s.codex}`) : '<p class="meta">Codex ยังไม่ได้เริ่มทำงานในห้องนี้</p>'}`;
+  $('#dlg-sessions').showModal();
+}
+
+// ---------- actions ----------
+async function load() { const s = await api('/api/state'); S.rooms = s.rooms; S.settings = s.settings; S.agents = s.agents; renderAgents(); renderRooms(); }
+async function select(id) {
+  S.current = id; S.rendered = null; location.hash = id || '';
+  S.room = id ? await api('/api/rooms/' + id) : null;
+  renderRooms(); renderRoom(true);
+}
+async function createRoom() {
+  const task = $('#n-task').value.trim(); if (!task) return;
+  $('#n-go').disabled = true;
+  try { const r = await api('/api/rooms', { task, dirs: S.newDirs.map((d) => d.path), skills: $('#n-skills').value, lead: $('#n-lead').value }); S.newDirs = null; await load(); select(r.id); }
+  catch (e) { $('#n-err').textContent = e.message; $('#n-go').disabled = false; }
+}
+async function sendMsg() { const t = $('#input').value.trim(); if (!t) return; $('#input').value = ''; autoGrow(); await api(`/api/rooms/${S.current}/message`, { text: t }); }
+async function decide(action) { await api(`/api/rooms/${S.current}/decide`, { action }); }
+async function stopRun() { await api(`/api/rooms/${S.current}/stop`, {}); }
+async function delRoom() { if (!confirm('ลบห้องนี้? (ไม่กระทบไฟล์ในโปรเจกต์)')) return; await api('/api/rooms/' + S.current, null, 'DELETE'); await load(); select(null); }
+async function resetLimit(a) { await api(`/api/agents/${a}/reset`, {}); }
+async function showDiff() {
+  const { diff } = await api(`/api/rooms/${S.current}/diff`);
+  $('#diff').innerHTML = esc(diff).split('\n').map((l) => /^\+(?!\+\+)/.test(l) ? `<span class="add">${l}</span>` : /^-(?!--)/.test(l) ? `<span class="del">${l}</span>` : l).join('\n');
+  $('#dlg-diff').showModal();
+}
+function openSettings() {
+  const s = S.settings; const f = $('#settings-form');
+  const ag = (a) => { const c = s.agents[a]; return `<fieldset><legend>${a}</legend>
+    <label>model ที่อนุญาต (คั่นด้วย ,)</label><input name="${a}.models" value="${esc(c.models.join(', '))}">
+    <div class="row"><div><label>model เริ่มต้น</label><input name="${a}.model" value="${esc(c.model)}"></div>
+    <div><label>effort เริ่มต้น / สูงสุด</label><div class="row"><select name="${a}.effort">${c.efforts.map((e) => `<option ${e === c.effort ? 'selected' : ''}>${e}</option>`).join('')}</select>
+    <select name="${a}.maxEffort">${c.efforts.map((e) => `<option ${e === c.maxEffort ? 'selected' : ''}>${e}</option>`).join('')}</select></div></div></div></fieldset>`; };
+  f.innerHTML = `<div class="dlg-head"><b>ตั้งค่า</b></div><div class="dlg-body">${ag('claude')}${ag('codex')}
+    <fieldset><legend>ตัวเลือก Lead (model ราคาถูก)</legend><div class="row"><div><label>agent</label><select name="d.agent">${['claude', 'codex'].map((a) => `<option ${a === s.dispatcher.agent ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
+    <div><label>model / effort</label><div class="row"><input name="d.model" value="${esc(s.dispatcher.model)}"><input name="d.effort" value="${esc(s.dispatcher.effort)}"></div></div></div>
+    <label>แนวทางเลือก Lead ตามประเภทงาน</label><textarea name="leadGuide" rows="5">${esc(s.leadGuide)}</textarea></fieldset>
+    <fieldset><legend>การทำงาน</legend><div class="row"><div><label>คุยกันเองได้กี่รอบก่อนถามคุณ</label><input type="number" name="maxAutoTurns" value="${s.maxAutoTurns}"></div>
+    <div><label>พักกี่นาทีเมื่อติด limit (กรณีไม่รู้เวลารีเซ็ต)</label><input type="number" name="cooldownMin" value="${s.cooldownMin}"></div></div>
+    <label>timeout ต่อรอบ (นาที)</label><input type="number" name="timeoutMin" value="${s.timeoutMin}"></fieldset></div>
+    <div class="dlg-foot"><button value="cancel">ยกเลิก</button><button class="primary" value="save">บันทึก</button></div>`;
+  $('#dlg-settings').showModal();
+}
+$('#dlg-settings').addEventListener('close', async () => {
+  if ($('#dlg-settings').returnValue !== 'save') return;
+  const v = Object.fromEntries(new FormData($('#settings-form')));
+  const s = structuredClone(S.settings);
+  for (const a of ['claude', 'codex']) {
+    s.agents[a].models = v[a + '.models'].split(',').map((x) => x.trim()).filter(Boolean);
+    s.agents[a].model = v[a + '.model'].trim(); s.agents[a].effort = v[a + '.effort']; s.agents[a].maxEffort = v[a + '.maxEffort'];
+  }
+  s.dispatcher = { agent: v['d.agent'], model: v['d.model'].trim(), effort: v['d.effort'].trim() };
+  s.leadGuide = v.leadGuide; s.maxAutoTurns = +v.maxAutoTurns; s.cooldownMin = +v.cooldownMin; s.timeoutMin = +v.timeoutMin;
+  S.settings = await api('/api/settings', s);
+});
+
+// ---------- live updates ----------
+const es = new EventSource('/api/events');
+es.onmessage = (e) => {
+  const ev = JSON.parse(e.data);
+  if (ev.type === 'agents') { S.agents = ev.agents; renderAgents(); }
+  if (ev.type === 'room') {
+    const i = S.rooms.findIndex((x) => x.id === ev.room.id);
+    const item = { id: ev.room.id, title: ev.room.title, status: ev.room.status, created: ev.room.created };
+    if (i >= 0) S.rooms[i] = item; else S.rooms.unshift(item);
+    renderRooms();
+    if (ev.room.id === S.current) {
+      if (ev.room.status === 'done' && S.room?.status !== 'done') load(); // refresh recent projects etc.
+      S.room = ev.room; renderRoom();
+    }
+  }
+  if (ev.type === 'live' && ev.roomId === S.current && S.room) {
+    if (ev.op === 'start') { S.room.live = ev.live; syncOffice(); scrollIfNear(() => { const el = $('#live'); if (el) el.remove(); $('#msgs')?.insertAdjacentHTML('beforeend', liveHtml(ev.live)); }); return; }
+    const L = S.room.live; if (!L) return;
+    if (ev.op === 'step') L.steps[ev.i] = ev.step;
+    else if (ev.op === 'set' && L.steps[ev.i]) Object.assign(L.steps[ev.i], ev.patch);
+    else if (ev.op === 'append' && L.steps[ev.i]) L.steps[ev.i][ev.field] = tail((L.steps[ev.i][ev.field] || '') + ev.text);
+    syncOffice(); queueStep(ev.i);
+  }
+  if (ev.type === 'deleted') { S.rooms = S.rooms.filter((x) => x.id !== ev.id); renderRooms(); }
+};
+setInterval(renderAgents, 60000);
+load().then(() => select(location.hash.slice(1) || null));
+</script>
+</body>
+</html>

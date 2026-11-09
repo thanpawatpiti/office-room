@@ -1,0 +1,4 @@
+data/
+app/build/
+app/.cache/
+app/dist/
